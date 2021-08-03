@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-service-b-ns
+  labels:
+    istio-injection: enabled
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: service-b-sa
+  namespace: test-service-b-ns
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-b-deploy
+  namespace: test-service-b-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-b
+      version: 1.0.0
+  template:
+    metadata:
+      labels:
+        app: service-b
+        version: 1.0.0
+    spec:
+      serviceAccountName: service-b-sa
+      containers:
+      - name: service-b-co
+        image: patrice1972/service-for-test-case-odata-path-parameter:1.0.0
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-b
+  namespace: test-service-b-ns
+spec:
+  selector:
+    app: service-b
+    version: 1.0.0
+  ports:
+  - name: service-b-http-port
+    protocol: TCP
+    port: 80
+    targetPort: 3000
